@@ -14,9 +14,9 @@
         .slot-group { display: flex; flex-direction: column; gap: 8px; }
         .slot-btn { width: 100%; padding: 14px; text-align: left; border: 1px solid #ccc; border-radius: 8px; background: white; font-size: 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .slot-btn.active { border-color: #000; background: #f0f0f0; font-weight: bold; }
-        .slot-btn.disabled { background: #e0e0e0; color: #888; cursor: not-allowed; border-color: #ddd; }
-        .checkbox-label { display: flex; align-items: center; font-weight: normal; font-size: 15px; margin-bottom: 8px; cursor: pointer; }
-        .checkbox-label input { margin-right: 10px; width: 18px; height: 18px; }
+        .checkbox-label { display: flex; align-items: flex-start; font-weight: normal; font-size: 14px; margin-bottom: 8px; cursor: pointer; line-height: 1.4; }
+        .checkbox-label input { margin-right: 10px; margin-top: 3px; width: 18px; height: 18px; flex-shrink: 0; }
+        .note { font-size: 12px; color: #666; margin-top: 4px; margin-bottom: 12px; }
         .total-box { background: #f9f9f9; padding: 16px; border-radius: 8px; font-size: 18px; font-weight: bold; display: flex; justify-content: space-between; margin-bottom: 20px; }
         .pay-btn { width: 100%; padding: 16px; background: #000; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; text-align: center; }
         .pay-btn:hover { background: #333; }
@@ -25,11 +25,12 @@
 <body>
 
 <div class="card">
-    <h2>レンタル暗室 予約</h2>
+    <h2>レンタル暗室 予約リクエスト</h2>
     
     <div class="section">
-        <label>予約日:</label>
+        <label>予約日選択 (※1週間後以降から選択可能):</label>
         <input type="date" id="dateSelect">
+        <div class="note">準備等の都合上、1週間後以降の日付のみご指定いただけます。</div>
     </div>
 
     <div class="section">
@@ -60,24 +61,35 @@
         </label>
     </div>
 
+    <div class="section">
+        <label>利用規約・前提条件:</label>
+        <label class="checkbox-label">
+            <input type="checkbox" id="optWs"> 日曜限定ワークショップ（4時間 / 10,000円）を受講済み、または受講することに同意します。
+        </label>
+    </div>
+
     <div class="total-box">
-        <span>合計金額:</span>
+        <span>合計金額目安:</span>
         <span id="totalPrice">4,500円 (税込)</span>
     </div>
 
-    <button type="button" class="pay-btn" onclick="book()">予約を確定する</button>
+    <button type="button" class="pay-btn" onclick="book()">予約リクエストを送信する</button>
 </div>
 
 <script>
     let selectedSlotName = "";
     
-    // 明日以降を選択できるように初期設定
-    document.getElementById('dateSelect').valueAsDate = new Date();
+    // 今日から「7日後（1週間後）」以降しか選べないように最小値を設定
+    const today = new Date();
+    today.setDate(today.getDate() + 7);
+    const minDateStr = today.toISOString().split('T')[0];
+    
+    const dateInput = document.getElementById('dateSelect');
+    dateInput.min = minDateStr;
+    dateInput.value = minDateStr; // 初期値も1週間後に設定
 
     function selectSlot(slotName) {
-        // ダミーの残席チェック（本来はここでサーバーやカレンダーの空き状況を確認します）
         selectedSlotName = slotName;
-        
         document.querySelectorAll('.slot-btn').forEach(btn => btn.classList.remove('active'));
         if(slotName.includes('朝')) document.getElementById('slot1').classList.add('active');
         if(slotName.includes('昼')) document.getElementById('slot2').classList.add('active');
@@ -87,13 +99,15 @@
     function calculateTotal() {
         let basePrice = 4500;
         if(document.getElementById('optHalf').checked) basePrice += 2500;
-        if(document.getElementById('optMount').checked) basePrice += 1500; // 1h 500円 × 3h
+        if(document.getElementById('optMount').checked) basePrice += 1500; 
         
         document.getElementById('totalPrice').innerText = basePrice.toLocaleString() + '円 (税込)';
     }
 
     function book() {
         const date = document.getElementById('dateSelect').value;
+        const wsChecked = document.getElementById('optWs').checked;
+
         if(!date) {
             alert('予約日を選択してください。');
             return;
@@ -102,8 +116,13 @@
             alert('時間枠を選択してください。');
             return;
         }
+        if(!wsChecked) {
+            alert('レンタル暗室のご利用には、日曜限定ワークショップ（4時間/10,000円）の受講・ご同意が必須となります。チェックを入れてください。');
+            return;
+        }
+
         const total = document.getElementById('totalPrice').innerText;
-        alert(`【予約内容の確認】\n日付: ${date}\n時間: ${selectedSlotName}\n金額: ${total}\n\nご予約ありがとうございます！`);
+        alert(`【予約リクエストの送信完了】\n日付: ${date}\n時間: ${selectedSlotName}\n金額目安: ${total}\n\nリクエストを受け付けました。\n内容を確認の上、こちらから確定のご連絡をいたします！`);
     }
 </script>
 
