@@ -3,178 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>レンタル暗室 予約システム</title>
+    <title>暗室 予約システム</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f7; margin: 0; padding: 20px; color: #333; }
-        .card { background: white; max-width: 500px; margin: 0 auto; padding: 24px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        h2 { margin-top: 0; font-size: 22px; }
-        .section { margin-bottom: 20px; }
-        label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 14px; }
-        input[type="date"], select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; background: white; }
-        .slot-group { display: flex; flex-direction: column; gap: 8px; }
-        .slot-btn { width: 100%; padding: 14px; text-align: left; border: 1px solid #ccc; border-radius: 8px; background: white; font-size: 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .slot-btn.active { border-color: #000; background: #f0f0f0; font-weight: bold; }
-        .checkbox-label { display: flex; align-items: flex-start; font-weight: normal; font-size: 14px; margin-bottom: 8px; cursor: pointer; line-height: 1.4; }
-        .checkbox-label input { margin-right: 10px; margin-top: 3px; width: 18px; height: 18px; flex-shrink: 0; }
-        .sub-box { background: #fafafa; border-left: 3px solid #000; padding: 12px; margin-top: 8px; margin-bottom: 12px; border-radius: 0 8px 8px 0; display: none; }
-        .sub-box.show { display: block; }
-        .note { font-size: 12px; color: #666; margin-top: 4px; margin-bottom: 12px; }
-        .total-box { background: #f9f9f9; padding: 16px; border-radius: 8px; font-size: 18px; font-weight: bold; display: flex; justify-content: space-between; margin-bottom: 20px; }
-        .pay-btn { width: 100%; padding: 16px; background: #000; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; text-align: center; }
-        .pay-btn:hover { background: #333; }
+        body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 0 20px; color: #333; }
+        h1 { font-size: 1.5rem; text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        select, input { width: 100%; padding: 10px; font-size: 1rem; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; font-size: 1rem; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .slot-btn { display: inline-block; width: 30%; margin: 5px 1.5%; padding: 10px; text-align: center; border: 1px solid #ccc; background: #f8f9fa; cursor: pointer; border-radius: 4px; box-sizing: border-box; }
+        .slot-btn.selected { background: #007bff; color: white; border-color: #007bff; }
+        .slot-btn.disabled { background: #e9ecef; color: #adb5bd; cursor: not-allowed; border-color: #dee2e6; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>レンタル暗室 予約リクエスト</h2>
-    
-    <div class="section">
-        <label>予約日選択 (※1週間後以降から選択可能):</label>
-        <input type="date" id="dateSelect">
-        <div class="note">準備等の都合上、1週間後以降の日付のみご指定いただけます。</div>
+    <h1>暗室 予約システム</h1>
+
+    <div class="form-group">
+        <label for="date">1. 予約日を選択</label>
+        <input type="date" id="date">
     </div>
 
-    <div class="section">
-        <label>時間枠を選択:</label>
-        <div class="slot-group">
-            <button type="button" class="slot-btn" onclick="selectSlot('朝の部 (09:00 - 12:00)')" id="slot1">
-                <span>朝の部 (09:00 - 12:00)</span>
-            </button>
-            <button type="button" class="slot-btn" onclick="selectSlot('昼の部 (13:00 - 16:00)')" id="slot2">
-                <span>昼の部 (13:00 - 16:00)</span>
-            </button>
-            <button type="button" class="slot-btn" onclick="selectSlot('夜の部 (17:00 - 20:00)')" id="slot3">
-                <span>夜の部 (17:00 - 20:00)</span>
-            </button>
+    <div class="form-group">
+        <label>2. 時間枠を選択</label>
+        <div id="slot-container">
+            <!-- 予約状況に応じて動的に変わります -->
+            <div class="slot-btn" data-slot="午前 (9:00-12:00)">午前<br><small>9:00-12:00</small></div>
+            <div class="slot-btn" data-slot="午後1 (13:00-15:30)">午後1<br><small>13:00-15:30</small></div>
+            <div class="slot-btn" data-slot="午後2 (15:45-18:15)">午後2<br><small>15:45-18:15</small></div>
+            <div class="slot-btn" data-slot="夜間 (18:30-21:00)">夜間<br><small>18:30-21:00</small></div>
         </div>
     </div>
 
-    <div class="section">
-        <label>引き伸ばし機を選択:</label>
-        <select id="machineSelect">
-            <option value="LPL 7700 (1号機)">LPL 7700 (1号機)</option>
-            <option value="LPL 7700 (2号機)">LPL 7700 (2号機)</option>
-            <option value="LUCKY 90M-S">LUCKY 90M-S</option>
-            <option value="フジ FD-690 プロフェッショナル">フジ FD-690 プロフェッショナル</option>
+    <div class="form-group">
+        <label for="machine">3. 引き伸ばし機を選択</label>
+        <select id="machine">
+            <option value="">-- 機種を選んでください --</option>
+            <option value="機種A">機種A (LPL等)</option>
+            <option value="機種B">機種B (FUJI等)</option>
         </select>
-        <div class="note">※LPL 7700は2台、LUCKY 90M-Sとフジ FD-690は各1台となります。</div>
     </div>
 
-    <div class="section">
-        <label>オプション選択:</label>
-        <label class="checkbox-label">
-            <input type="checkbox" id="optHalf" onchange="calculateTotal()"> 半切サイズ (+2,500円)
-        </label>
-        <label class="checkbox-label">
-            <input type="checkbox" id="optMount" onchange="calculateTotal()"> マウントプレス利用 [3時間] (+1,500円)
-        </label>
+    <div class="form-group">
+        <label for="option">4. オプション</label>
+        <input type="text" id="option" placeholder="例: イーゼルマスク追加 など">
     </div>
 
-    <div class="section">
-        <label>ワークショップ（講習）について:</label>
-        
-        <label class="checkbox-label">
-            <input type="checkbox" id="optWsDone" onchange="toggleWsDone()"> すでに日曜限定ワークショップを受講済み
-        </label>
-
-        <label class="checkbox-label">
-            <input type="checkbox" id="optWsPlan" onchange="toggleWsPlan()"> これから日曜限定ワークショップを受講する（受講予定）
-        </label>
-        
-        <div class="sub-box" id="wsPlanBox">
-            <label style="font-size: 13px; margin-bottom: 4px;">【日曜限定】受講希望コースを選択 (4時間 / 10,000円):</label>
-            <select id="wsCourseSelect" onchange="calculateTotal()">
-                <option value="日曜午前 (08:00 - 12:00)">日曜日 午前コース (08:00 - 12:00)</option>
-                <option value="日曜午後 (13:00 - 17:00)">日曜日 午後コース (13:00 - 17:00)</option>
-            </select>
-        </div>
+    <div class="form-group">
+        <label for="wsInfo">5. ワークショップ情報</label>
+        <input type="text" id="wsInfo" placeholder="特になければ空欄でOK">
     </div>
 
-    <div class="total-box">
-        <span>合計金額目安:</span>
-        <span id="totalPrice">4,500円 (税込)</span>
-    </div>
+    <button id="submit-btn" type="button">予約をリクエストする</button>
 
-    <button type="button" class="pay-btn" onclick="book()">予約リクエストを送信する</button>
-</div>
+    <script>
+        // あなたのGASのURLをセット済みです
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwgKC2RQBqOYICKugodV_gZP5oGE7UbyLMNXYOo5cpLCbHiBfOKOtWoTdQrmQ9I0cul/exec';
 
-<script>
-    let selectedSlotName = "";
-    
-    const today = new Date();
-    today.setDate(today.getDate() + 7);
-    const minDateStr = today.toISOString().split('T')[0];
-    
-    const dateInput = document.getElementById('dateSelect');
-    dateInput.min = minDateStr;
-    dateInput.value = minDateStr;
+        let selectedSlot = '';
+        let existingBookings = [];
 
-    function selectSlot(slotName) {
-        selectedSlotName = slotName;
-        document.querySelectorAll('.slot-btn').forEach(btn => btn.classList.remove('active'));
-        if(slotName.includes('朝')) document.getElementById('slot1').classList.add('active');
-        if(slotName.includes('昼')) document.getElementById('slot2').classList.add('active');
-        if(slotName.includes('夜')) document.getElementById('slot3').classList.add('active');
-    }
+        // ページ読み込み時に既存の予約データを取得
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch(WEB_APP_URL);
+                existingBookings = await response.json();
+            } catch (e) {
+                console.error('予約状況の取得に失敗しました', e);
+            }
+        });
 
-    function toggleWsDone() {
-        if(document.getElementById('optWsDone').checked) {
-            document.getElementById('optWsPlan').checked = false;
-            document.getElementById('wsPlanBox').classList.remove('show');
-        }
-        calculateTotal();
-    }
+        // 日付や機材が変わったときに埋まり具合をチェックする関数
+        function updateSlotAvailability() {
+            const currentDate = document.getElementById('date').value;
+            const currentMachine = document.getElementById('machine').value;
+            
+            const slotBtns = document.querySelectorAll('.slot-btn');
+            slotBtns.forEach(btn => {
+                const slotName = btn.getAttribute('data-slot');
+                
+                // 既に同じ日・同じ機材・同じ時間枠で予約があるかチェック
+                const isBooked = existingBookings.some(b => 
+                    b.date === currentDate && 
+                    b.machine === currentMachine && 
+                    b.slot === slotName
+                );
 
-    function toggleWsPlan() {
-        const planChecked = document.getElementById('optWsPlan').checked;
-        if(planChecked) {
-            document.getElementById('optWsDone').checked = false;
-            document.getElementById('wsPlanBox').classList.add('show');
-        } else {
-            document.getElementById('wsPlanBox').classList.remove('show');
-        }
-        calculateTotal();
-    }
-
-    function calculateTotal() {
-        let basePrice = 4500;
-        
-        if(document.getElementById('optWsPlan').checked) {
-            basePrice = 10000;
-        } else {
-            if(document.getElementById('optHalf').checked) basePrice += 2500;
-            if(document.getElementById('optMount').checked) basePrice += 1500; 
-        }
-        
-        document.getElementById('totalPrice').innerText = basePrice.toLocaleString() + '円 (税込)';
-    }
-
-    function book() {
-        const date = document.getElementById('dateSelect').value;
-        const machine = document.getElementById('machineSelect').value;
-        const wsDone = document.getElementById('optWsDone').checked;
-        const wsPlan = document.getElementById('optWsPlan').checked;
-
-        if(!date) {
-            alert('予約日を選択してください。');
-            return;
-        }
-        if(!selectedSlotName) {
-            alert('時間枠を選択してください。');
-            return;
-        }
-        if(!wsDone && !wsPlan) {
-            alert('「すでに受講済み」または「これから受講予定」のいずれかにチェックを入れてください。');
-            return;
+                if (isBooked) {
+                    btn.classList.add('disabled');
+                    btn.classList.remove('selected');
+                    if (selectedSlot === slotName) selectedSlot = '';
+                } else {
+                    btn.classList.remove('disabled');
+                }
+            });
         }
 
-        let wsInfo = wsDone ? "受講済み" : `受講予定 (${document.getElementById('wsCourseSelect').value})`;
-        const total = document.getElementById('totalPrice').innerText;
-        
-        alert(`【予約リクエストの送信完了】\n日付: ${date}\n時間: ${selectedSlotName}\n引き伸ばし機: ${machine}\nワークショップ: ${wsInfo}\n金額目安: ${total}\n\nリクエストを受け付けました。\n内容を確認の上、こちらから確定のご連絡をいたします！`);
-    }
-</script>
+        document.getElementById('date').addEventListener('change', updateSlotAvailability);
+        document.getElementById('machine').addEventListener('change', updateSlotAvailability);
 
+        // 時間枠ボタンのクリック処理
+        document.querySelectorAll('.slot-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (btn.classList.contains('disabled')) {
+                    alert('この時間枠のその機種はすでに予約されています。');
+                    return;
+                }
+                document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedSlot = btn.getAttribute('data-slot');
+            });
+        });
+
+        // 送信ボタンの処理
+        document.getElementById('submit-btn').addEventListener('click', async () => {
+            const date = document.getElementById('date').value;
+            const machine = document.getElementById('machine').value;
+            const option = document.getElementById('option').value;
+            const wsInfo = document.getElementById('wsInfo').value;
+
+            if (!date || !selectedSlot || !machine) {
+                alert('「日付」「時間枠」「引き伸ばし機」をすべて選択してください！');
+                return;
+            }
+
+            const payload = {
+                date: date,
+                slot: selectedSlot,
+                machine: machine,
+                option: option,
+                wsInfo: wsInfo
+            };
+
+            document.getElementById('submit-btn').disabled = true;
+            document.getElementById('submit-btn').textContent = '送信中...';
+
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    alert('予約リクエストを受け付けました！');
+                    location.reload();
+                } else {
+                    alert(result.message);
+                    document.getElementById('submit-btn').disabled = false;
+                    document.getElementById('submit-btn').textContent = '予約をリクエストする';
+                }
+            } catch (error) {
+                alert('通信エラーが発生しました。もう一度お試しください。');
+                document.getElementById('submit-btn').disabled = false;
+                document.getElementById('submit-btn').textContent = '予約をリクエストする';
+            }
+        });
+    </script>
 </body>
 </html>
