@@ -111,7 +111,6 @@
         if(slotName.includes('夜')) document.getElementById('slot3').classList.add('active');
     }
 
-    // 「受講済み」にチェックが入ったら「受講予定」のチェックを外す排他制御
     function toggleWsDone() {
         if(document.getElementById('optWsDone').checked) {
             document.getElementById('optWsPlan').checked = false;
@@ -120,7 +119,6 @@
         calculateTotal();
     }
 
-    // 「受講予定」にチェックが入ったら「受講済み」を外してコース選択を表示
     function toggleWsPlan() {
         const planChecked = document.getElementById('optWsPlan').checked;
         if(planChecked) {
@@ -135,16 +133,13 @@
     function calculateTotal() {
         let basePrice = 4500;
         
-        // オプション加算
-        if(document.getElementById('optHalf').checked) basePrice += 2500;
-        if(document.getElementById('optMount').checked) basePrice += 1500; 
-
-        // これから受講予定の場合はワークショップ代（10,000円）を加算
-        let wsText = "";
+        // これから受講予定の場合は、通常レンタル料をベースにせずワークショップ代（10,000円）にする
         if(document.getElementById('optWsPlan').checked) {
-            basePrice += 10000;
-            const course = document.getElementById('wsCourseSelect').value;
-            wsText = ` (WS込: ${course})`;
+            basePrice = 10000;
+        } else {
+            // 受講済み、または未選択の場合は通常料金にオプションを加算
+            if(document.getElementById('optHalf').checked) basePrice += 2500;
+            if(document.getElementById('optMount').checked) basePrice += 1500; 
         }
         
         document.getElementById('totalPrice').innerText = basePrice.toLocaleString() + '円 (税込)';
