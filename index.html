@@ -79,14 +79,13 @@
 <script>
     let selectedSlotName = "";
     
-    // 今日から「7日後（1週間後）」以降しか選べないように最小値を設定
     const today = new Date();
     today.setDate(today.getDate() + 7);
     const minDateStr = today.toISOString().split('T')[0];
     
     const dateInput = document.getElementById('dateSelect');
     dateInput.min = minDateStr;
-    dateInput.value = minDateStr; // 初期値も1週間後に設定
+    dateInput.value = minDateStr;
 
     function selectSlot(slotName) {
         selectedSlotName = slotName;
