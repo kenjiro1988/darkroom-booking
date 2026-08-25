@@ -101,8 +101,8 @@
 </div>
 
 <script>
-    // あなたのGASのURL
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwgKC2RQBqOYICKugodV_gZP5oGE7UbyLMNXYOo5cpLCbHiBfOKOtWoTdQrmQ9I0cul/exec';
+    // 新しく発行された最新のGASのURLを組み込み済みです
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwNuRsSMH7LrqyNUuO0GigDBHCTyrcMYhby1kICQ7ORC3GQa_fj1mZC0sph-2_d2n/exec';
 
     let selectedSlotName = "";
     
@@ -157,8 +157,9 @@
     async function book() {
         const submitBtn = document.getElementById('submitBtn');
         
-        // すでに送信中の場合は二重で実行しないようにガード
         if (submitBtn.disabled) return;
+        submitBtn.disabled = true;
+        submitBtn.innerText = '送信中...';
 
         const date = document.getElementById('dateSelect').value;
         const machine = document.getElementById('machineSelect').value;
@@ -169,20 +170,22 @@
 
         if(!date) {
             alert('予約日を選択してください。');
+            submitBtn.disabled = false;
+            submitBtn.innerText = '予約リクエストを送信する';
             return;
         }
         if(!selectedSlotName) {
             alert('時間枠を選択してください。');
+            submitBtn.disabled = false;
+            submitBtn.innerText = '予約リクエストを送信する';
             return;
         }
         if(!wsDone && !wsPlan) {
             alert('「すでに受講済み」または「これから受講予定」のいずれかにチェックを入れてください。');
+            submitBtn.disabled = false;
+            submitBtn.innerText = '予約リクエストを送信する';
             return;
         }
-
-        // 🚀 ボタンを即座に無効化して連打を完全にブロック
-        submitBtn.disabled = true;
-        submitBtn.innerText = '送信中...';
 
         let wsInfo = wsDone ? "受講済み" : `受講予定 (${document.getElementById('wsCourseSelect').value})`;
         let optionsArr = [];
@@ -212,7 +215,7 @@
                 alert(`【予約リクエストの送信完了】\n日付: ${date}\n時間: ${selectedSlotName}\n引き伸ばし機: ${machine}\nオプション: ${optionStr}\nワークショップ: ${wsInfo}\n金額目安: ${total}\n\nリクエストを受け付けました。`);
                 location.reload();
             } else {
-                alert('エラー: ' + (result.message || '送信に失敗しました'));
+                alert(result.message || '送信に失敗しました');
                 submitBtn.disabled = false;
                 submitBtn.innerText = '予約リクエストを送信する';
             }
