@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>レンタル暗室 予約システム</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f7; margin: 0; padding: 20px; color: #333; }
+        .card { background: white; max-width: 500px; margin: 0 auto; padding: 24px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        h2 { margin-top: 0; font-size: 22px; }
+        .section { margin-bottom: 20px; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 14px; }
+        input[type="date"], select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        .slot-group { display: flex; flex-direction: column; gap: 8px; }
+        .slot-btn { width: 100%; padding: 14px; text-align: left; border: 1px solid #ccc; border-radius: 8px; background: white; font-size: 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .slot-btn.active { border-color: #000; background: #f0f0f0; font-weight: bold; }
+        .slot-btn.disabled { background: #e0e0e0; color: #888; cursor: not-allowed; border-color: #ddd; }
+        .checkbox-label { display: flex; align-items: center; font-weight: normal; font-size: 15px; margin-bottom: 8px; cursor: pointer; }
+        .checkbox-label input { margin-right: 10px; width: 18px; height: 18px; }
+        .total-box { background: #f9f9f9; padding: 16px; border-radius: 8px; font-size: 18px; font-weight: bold; display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .pay-btn { width: 100%; padding: 16px; background: #000; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; text-align: center; }
+        .pay-btn:hover { background: #333; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>レンタル暗室 予約</h2>
+    
+    <div class="section">
+        <label>予約日:</label>
+        <input type="date" id="dateSelect">
+    </div>
+
+    <div class="section">
+        <label>時間枠を選択 (残り台数):</label>
+        <div class="slot-group">
+            <button type="button" class="slot-btn" onclick="selectSlot('朝の部 (09:00 - 12:00)')" id="slot1">
+                <span>朝の部 (09:00 - 12:00)</span>
+                <span id="stock1" style="font-size: 13px; color: #666;">残り 4台</span>
+            </button>
+            <button type="button" class="slot-btn" onclick="selectSlot('昼の部 (13:00 - 16:00)')" id="slot2">
+                <span>昼の部 (13:00 - 16:00)</span>
+                <span id="stock2" style="font-size: 13px; color: #666;">残り 4台</span>
+            </button>
+            <button type="button" class="slot-btn" onclick="selectSlot('夜の部 (17:00 - 20:00)')" id="slot3">
+                <span>夜の部 (17:00 - 20:00)</span>
+                <span id="stock3" style="font-size: 13px; color: #666;">残り 4台</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="section">
+        <label>オプション選択:</label>
+        <label class="checkbox-label">
+            <input type="checkbox" id="optHalf" onchange="calculateTotal()"> 半切サイズ (+2,500円)
+        </label>
+        <label class="checkbox-label">
+            <input type="checkbox" id="optMount" onchange="calculateTotal()"> マウントプレス利用 [3時間] (+1,500円)
+        </label>
+    </div>
+
+    <div class="total-box">
+        <span>合計金額:</span>
+        <span id="totalPrice">4,500円 (税込)</span>
+    </div>
+
+    <button type="button" class="pay-btn" onclick="book()">予約を確定する</button>
+</div>
+
+<script>
+    let selectedSlotName = "";
+    
+    // 明日以降を選択できるように初期設定
+    document.getElementById('dateSelect').valueAsDate = new Date();
+
+    function selectSlot(slotName) {
+        // ダミーの残席チェック（本来はここでサーバーやカレンダーの空き状況を確認します）
+        selectedSlotName = slotName;
+        
+        document.querySelectorAll('.slot-btn').forEach(btn => btn.classList.remove('active'));
+        if(slotName.includes('朝')) document.getElementById('slot1').classList.add('active');
+        if(slotName.includes('昼')) document.getElementById('slot2').classList.add('active');
+        if(slotName.includes('夜')) document.getElementById('slot3').classList.add('active');
+    }
+
+    function calculateTotal() {
+        let basePrice = 4500;
+        if(document.getElementById('optHalf').checked) basePrice += 2500;
+        if(document.getElementById('optMount').checked) basePrice += 1500; // 1h 500円 × 3h
+        
+        document.getElementById('totalPrice').innerText = basePrice.toLocaleString() + '円 (税込)';
+    }
+
+    function book() {
+        const date = document.getElementById('dateSelect').value;
+        if(!date) {
+            alert('予約日を選択してください。');
+            return;
+        }
+        if(!selectedSlotName) {
+            alert('時間枠を選択してください。');
+            return;
+        }
+        const total = document.getElementById('totalPrice').innerText;
+        alert(`【予約内容の確認】\n日付: ${date}\n時間: ${selectedSlotName}\n金額: ${total}\n\nご予約ありがとうございます！`);
+    }
+</script>
+
+</body>
+</html>
