@@ -22,6 +22,7 @@
         .total-box { background: #f9f9f9; padding: 16px; border-radius: 8px; font-size: 18px; font-weight: bold; display: flex; justify-content: space-between; margin-bottom: 20px; }
         .pay-btn { width: 100%; padding: 16px; background: #000; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; text-align: center; }
         .pay-btn:hover { background: #333; }
+        .pay-btn:disabled { background: #888; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -100,7 +101,7 @@
 </div>
 
 <script>
-    // あなたのGASのURLを設定済みです
+    // あなたのGASのURL
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwgKC2RQBqOYICKugodV_gZP5oGE7UbyLMNXYOo5cpLCbHiBfOKOtWoTdQrmQ9I0cul/exec';
 
     let selectedSlotName = "";
@@ -154,6 +155,11 @@
     }
 
     async function book() {
+        const submitBtn = document.getElementById('submitBtn');
+        
+        // すでに送信中の場合は二重で実行しないようにガード
+        if (submitBtn.disabled) return;
+
         const date = document.getElementById('dateSelect').value;
         const machine = document.getElementById('machineSelect').value;
         const wsDone = document.getElementById('optWsDone').checked;
@@ -174,6 +180,10 @@
             return;
         }
 
+        // 🚀 ボタンを即座に無効化して連打を完全にブロック
+        submitBtn.disabled = true;
+        submitBtn.innerText = '送信中...';
+
         let wsInfo = wsDone ? "受講済み" : `受講予定 (${document.getElementById('wsCourseSelect').value})`;
         let optionsArr = [];
         if(half) optionsArr.push('半切サイズ');
@@ -191,10 +201,6 @@
             total: total
         };
 
-        const submitBtn = document.getElementById('submitBtn');
-        submitBtn.disabled = true;
-        submitBtn.innerText = '送信中...';
-
         try {
             const response = await fetch(WEB_APP_URL, {
                 method: 'POST',
@@ -203,7 +209,7 @@
             const result = await response.json();
 
             if (result.status === 'success') {
-                alert(`【予約リクエストの送信完了】\n日付: ${date}\n時間: ${selectedSlotName}\n引き伸ばし機: ${machine}\nオプション: ${optionStr}\nワークショップ: ${wsInfo}\n金額目安: ${total}\n\nリクエストを受け付けました。スプレッドシートに記録されました！`);
+                alert(`【予約リクエストの送信完了】\n日付: ${date}\n時間: ${selectedSlotName}\n引き伸ばし機: ${machine}\nオプション: ${optionStr}\nワークショップ: ${wsInfo}\n金額目安: ${total}\n\nリクエストを受け付けました。`);
                 location.reload();
             } else {
                 alert('エラー: ' + (result.message || '送信に失敗しました'));
